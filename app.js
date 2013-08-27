@@ -8,6 +8,8 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
+var fs = require('fs');
+var User = require('./models/User.js');
 
 var app = express();
 
@@ -29,6 +31,26 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/users', user.list);
+app.get('/form', function(req, res){
+	fs.readFile('./form.html', function(error, content){
+		if(error){
+			res.writeHead(500)
+			res.end()
+		}else {
+			res.writeHead(200, { 'Content-Type': 'text/html' })
+			res.end(content, 'utf-8')
+		}
+	})
+})
+
+app.post('/signup', function(req, res){
+	var username = req.body.username
+	var password = req.body.password
+	User.addUser(username, password, function(err, user){
+		if(err) throw err;
+		res.redirect('/form')
+	})
+})
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
